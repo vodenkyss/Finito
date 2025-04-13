@@ -1,6 +1,7 @@
 package GUI;
 
 import model.Task;
+import model.TaskFolder;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,6 +9,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 public class TaskManagerGUI {
 
@@ -17,6 +19,16 @@ public class TaskManagerGUI {
     private JList<Task> taskJList= new JList<Task>();
 
     private DefaultListModel<Task> taskDefaultListModel= new DefaultListModel<>();
+    private DefaultComboBoxModel<TaskFolder> folderModel;
+
+    private JComboBox<TaskFolder> folderJComboBox;
+
+    private ArrayList<TaskFolder> folders;
+
+    public TaskManagerGUI() {
+        folders= new ArrayList<>();
+        initialize();
+    }
 
     public void initialize(){
 
@@ -34,8 +46,27 @@ public class TaskManagerGUI {
 
         frame.setLayout(new BorderLayout());
 
-        JPanel bottomPanel= new JPanel(new BorderLayout());
+        JPanel topPanel = new JPanel(new BorderLayout());
+        folderModel = new DefaultComboBoxModel<>();
+        folderJComboBox = new JComboBox<>(folderModel);
+        folderJComboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                loadFolder();
+            }
+        });
+        JButton newFolder = new JButton("+");
+        newFolder.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addFolder();
+            }
+        });
 
+        topPanel.add(folderJComboBox,BorderLayout.CENTER);
+        topPanel.add(newFolder,BorderLayout.SOUTH);
+
+        JPanel bottomPanel= new JPanel(new BorderLayout());
         textfield = new JTextField();
         JButton addButton = new JButton("Add task");
         JButton removeButton = new JButton("Remove");
@@ -71,6 +102,7 @@ public class TaskManagerGUI {
         bottomPanel.add(addButton, BorderLayout.EAST);
         bottomPanel.add(removeButton,BorderLayout.SOUTH);
 
+        frame.add(topPanel,BorderLayout.NORTH);
         frame.add(bottomPanel, BorderLayout.SOUTH);
         frame.add(new JScrollPane(taskJList),BorderLayout.CENTER);
         frame.setVisible(true);
@@ -93,6 +125,26 @@ public class TaskManagerGUI {
         if (selectedTask!=null){
             taskDefaultListModel.removeElement(selectedTask);
         }
+    }
+
+    public void loadFolder(){
+        TaskFolder selected = (TaskFolder) folderJComboBox.getSelectedItem();
+        if (selected != null) {
+            for (Task task : selected.getTasks()) {
+                taskDefaultListModel.addElement(task);
+            }
+        }
+    }
+
+    public void addFolder(){
+        String name = JOptionPane.showInputDialog(frame, "Folder name:");
+        if (name != null && !name.trim().isEmpty()) {
+            TaskFolder newFolder = new TaskFolder(name.trim());
+            folders.add(newFolder);
+            folderModel.addElement(newFolder);
+            folderJComboBox.setSelectedItem(newFolder);
+        }
+
     }
 
     private void windowColors(){
