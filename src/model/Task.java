@@ -1,3 +1,5 @@
+package model;
+
 public class Task {
     private String description;
     private boolean isDone;
@@ -21,7 +23,7 @@ public class Task {
 
     @Override
     public String toString() {
-        return "Task{" +
+        return "model.Task{" +
                 "description='" + description + '\'' +
                 ", isDone=" + isDone +
                 '}';
