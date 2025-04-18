@@ -1,8 +1,9 @@
 package model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class TaskFolder {
+public class TaskFolder implements Serializable {
 
     private String name;
     private ArrayList<Task> tasks;

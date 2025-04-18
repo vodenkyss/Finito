@@ -1,11 +1,13 @@
 package GUI;
 
+import data.DataManager;
 import model.Task;
 import model.TaskFolder;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 import java.util.ArrayList;
 
 public class TaskManagerGUI {
@@ -22,11 +24,14 @@ public class TaskManagerGUI {
     private ArrayList<TaskFolder> folders;
 
     public TaskManagerGUI() {
+
         folders = new ArrayList<>();
+
         initialize();
     }
 
     public void initialize() {
+
 
         try {
             UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarculaLaf());
@@ -48,6 +53,8 @@ public class TaskManagerGUI {
                 loadFolder();
             }
         });
+
+        loadData();
 
         JButton newFolder = new JButton("+ Add Folder");
         newFolder.addActionListener(new ActionListener() {
@@ -122,6 +129,12 @@ public class TaskManagerGUI {
 
         frame.add(sidebar, BorderLayout.WEST);
         frame.add(contentPanel, BorderLayout.CENTER);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                saveData();
+            }
+        });
 
         frame.setVisible(true);
     }
@@ -176,6 +189,20 @@ public class TaskManagerGUI {
             taskDefaultListModel.clear();
         }
     }
+
+    private void saveData() {
+        DataManager.saveFolders(folders);
+    }
+
+
+    private void loadData() {
+        folders = DataManager.loadFolders();
+        for (TaskFolder folder : folders) {
+            folderListModel.addElement(folder);
+        }
+    }
+
+
 
     private void windowColors() {
         Font customFont = new Font("Segoe UI", Font.BOLD, 14);
