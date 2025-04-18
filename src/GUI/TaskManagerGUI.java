@@ -5,10 +5,7 @@ import model.TaskFolder;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 
 public class TaskManagerGUI {
@@ -17,11 +14,10 @@ public class TaskManagerGUI {
     private JTextField textfield;
 
     private JList<Task> taskJList = new JList<Task>();
-
     private DefaultListModel<Task> taskDefaultListModel = new DefaultListModel<>();
-    private DefaultComboBoxModel<TaskFolder> folderModel;
 
-    private JComboBox<TaskFolder> folderJComboBox;
+    private JList<TaskFolder> folderList;
+    private DefaultListModel<TaskFolder> folderListModel;
 
     private ArrayList<TaskFolder> folders;
 
@@ -33,33 +29,27 @@ public class TaskManagerGUI {
     public void initialize() {
 
         try {
-            UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
+            UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarculaLaf());
             windowColors();
-
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
 
         frame = new JFrame("Finito!");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 600);
-
+        frame.setSize(700, 600);
         frame.setLayout(new BorderLayout());
 
-        JPanel topPanel = new JPanel(new FlowLayout());
-        folderModel = new DefaultComboBoxModel<>();
-        folderJComboBox = new JComboBox<>(folderModel);
-        folderJComboBox.setPreferredSize(new Dimension(150,30));
-        folderJComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        folderListModel = new DefaultListModel<>();
+        folderList = new JList<>(folderListModel);
+        folderList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        folderList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
                 loadFolder();
             }
         });
-        JButton newFolder = new JButton("New folder");
-        newFolder.setPreferredSize(new Dimension(150,30));
 
-
+        JButton newFolder = new JButton("+ Add Folder");
         newFolder.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -67,20 +57,36 @@ public class TaskManagerGUI {
             }
         });
 
-        topPanel.add(folderJComboBox, BorderLayout.CENTER);
-        topPanel.add(newFolder, BorderLayout.SOUTH);
+        JButton removeFolderButton = new JButton("- Remove Folder");
+        removeFolderButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                removeFolder();
+            }
+        });
+
+        JPanel sidebar = new JPanel(new BorderLayout());
+        JPanel folderButtons = new JPanel(new GridLayout(2, 1));
+        folderButtons.add(newFolder);
+        folderButtons.add(removeFolderButton);
+
+        sidebar.add(new JScrollPane(folderList), BorderLayout.CENTER);
+        sidebar.add(folderButtons, BorderLayout.SOUTH);
+        sidebar.setPreferredSize(new Dimension(180, 0));
+
+        JPanel contentPanel = new JPanel(new BorderLayout());
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
         textfield = new JTextField();
         JButton addButton = new JButton("Add task");
         JButton removeButton = new JButton("Remove");
+
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 addTask();
             }
         });
-
         removeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -95,54 +101,56 @@ public class TaskManagerGUI {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int index = taskJList.locationToIndex(e.getPoint());
-                Task task = taskDefaultListModel.get(index);
-                task.toggleDone();
-                taskJList.repaint();
+                if (index != -1) {
+                    Task task = taskDefaultListModel.get(index);
+                    Rectangle bounds = taskJList.getCellBounds(index, index);
+                    int iconSize = 16;
+                    if (e.getX() - bounds.x <= iconSize) {
+                        task.toggleDone();
+                        taskJList.repaint();
+                    }
+                }
             }
         });
-
 
         bottomPanel.add(textfield, BorderLayout.CENTER);
         bottomPanel.add(addButton, BorderLayout.EAST);
         bottomPanel.add(removeButton, BorderLayout.SOUTH);
 
-        frame.add(topPanel, BorderLayout.NORTH);
-        frame.add(bottomPanel, BorderLayout.SOUTH);
-        frame.add(new JScrollPane(taskJList), BorderLayout.CENTER);
+        contentPanel.add(new JScrollPane(taskJList), BorderLayout.CENTER);
+        contentPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        frame.add(sidebar, BorderLayout.WEST);
+        frame.add(contentPanel, BorderLayout.CENTER);
+
         frame.setVisible(true);
-
-
     }
 
     private void addTask() {
         String description = textfield.getText().trim();
         if (!description.isEmpty()) {
             Task task = new Task(description);
-            TaskFolder selected = (TaskFolder) folderJComboBox.getSelectedItem();
+            TaskFolder selected = folderList.getSelectedValue();
             if (selected != null) {
                 selected.addTask(task);
                 taskDefaultListModel.addElement(task);
                 textfield.setText("");
             }
-
         }
     }
 
     private void removeTask() {
         Task selectedTask = taskJList.getSelectedValue();
-        TaskFolder selectedFolder = (TaskFolder) folderJComboBox.getSelectedItem();
-        if (selectedFolder != null) {
-            selectedFolder.getTasks().remove(selectedTask);
-        }
-        if (selectedTask != null) {
+        TaskFolder selectedFolder = folderList.getSelectedValue();
+        if (selectedTask != null && selectedFolder != null) {
             taskDefaultListModel.removeElement(selectedTask);
-
+            selectedFolder.getTasks().remove(selectedTask);
         }
     }
 
     public void loadFolder() {
         taskDefaultListModel.clear();
-        TaskFolder selected = (TaskFolder) folderJComboBox.getSelectedItem();
+        TaskFolder selected = folderList.getSelectedValue();
         if (selected != null) {
             for (Task task : selected.getTasks()) {
                 taskDefaultListModel.addElement(task);
@@ -155,14 +163,21 @@ public class TaskManagerGUI {
         if (name != null && !name.trim().isEmpty()) {
             TaskFolder newFolder = new TaskFolder(name.trim());
             folders.add(newFolder);
-            folderModel.addElement(newFolder);
-            folderJComboBox.setSelectedItem(newFolder);
+            folderListModel.addElement(newFolder);
+            folderList.setSelectedValue(newFolder, true);
         }
+    }
 
+    public void removeFolder() {
+        TaskFolder selected = folderList.getSelectedValue();
+        if (selected != null) {
+            folders.remove(selected);
+            folderListModel.removeElement(selected);
+            taskDefaultListModel.clear();
+        }
     }
 
     private void windowColors() {
-
         Font customFont = new Font("Segoe UI", Font.BOLD, 14);
         UIManager.put("Label.font", customFont);
         UIManager.put("Button.font", customFont);
@@ -176,19 +191,5 @@ public class TaskManagerGUI {
         UIManager.put("Button.arc", 15);
         UIManager.put("TextComponent.arc", 10);
 
-        UIManager.put("Button.background", new Color(139, 217, 142));
-        UIManager.put("Button.foreground", new Color(0, 0, 0));
-
-        UIManager.put("Panel.background", new Color(81, 169, 126));
-        UIManager.put("List.background", new Color(81, 169, 126));
-        UIManager.put("List.selectionBackground", new Color(81, 169, 126));
-        UIManager.put("List.selectionForeground", Color.BLACK);
-
-        UIManager.put("TextField.background", new Color(255, 255, 255));
-        UIManager.put("TextField.foreground", Color.BLACK);
-        UIManager.put("TextField.caretForeground", new Color(33, 66, 44));
-
     }
-
-
 }
