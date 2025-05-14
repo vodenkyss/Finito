@@ -1,10 +1,21 @@
 package model;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 
 public class Task implements Serializable {
     private String description;
     private boolean isDone;
+
+    private LocalDate deadline;
+
+    public LocalDate getDeadline() {
+        return deadline;
+    }
+
+    public void setDeadline(LocalDate deadline) {
+        this.deadline = deadline;
+    }
 
     public Task(String description) {
         this.description = description;

@@ -8,6 +8,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class TaskManagerGUI {
@@ -142,7 +144,19 @@ public class TaskManagerGUI {
     private void addTask() {
         String description = textfield.getText().trim();
         if (!description.isEmpty()) {
+            LocalDate deadline = null;
+            String dateStr = JOptionPane.showInputDialog(frame, "Enter deadline (dd.MM.yyyy) or leave it blank:");
+
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                try {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+                    deadline = LocalDate.parse(dateStr.trim(), formatter);
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(frame, "Wrong format");
+                }
+            }
             Task task = new Task(description);
+            task.setDeadline(deadline);
             TaskFolder selected = folderList.getSelectedValue();
             if (selected != null) {
                 selected.addTask(task);
