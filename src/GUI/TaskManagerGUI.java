@@ -1,6 +1,7 @@
 package GUI;
 
 import data.DataManager;
+import model.Priority;
 import model.Task;
 import model.TaskFolder;
 
@@ -26,9 +27,7 @@ public class TaskManagerGUI {
     private ArrayList<TaskFolder> folders;
 
     public TaskManagerGUI() {
-
         folders = new ArrayList<>();
-
         initialize();
     }
 
@@ -155,8 +154,20 @@ public class TaskManagerGUI {
                     JOptionPane.showMessageDialog(frame, "Wrong format");
                 }
             }
+
+            Priority priority = (Priority) JOptionPane.showInputDialog(frame,
+                    "Zvol prioritu:",
+                    "Priorita",
+                    JOptionPane.QUESTION_MESSAGE,
+                    null, Priority.values(),
+                    Priority.MEDIUM
+            );
+
             Task task = new Task(description);
             task.setDeadline(deadline);
+            if (priority!=null){
+                task.setPriority(priority);
+            }
             TaskFolder selected = folderList.getSelectedValue();
             if (selected != null) {
                 selected.addTask(task);

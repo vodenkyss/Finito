@@ -6,6 +6,7 @@ import java.time.LocalDate;
 public class Task implements Serializable {
     private String description;
     private boolean isDone;
+    private Priority priority= Priority.MEDIUM;
 
     private LocalDate deadline;
 
@@ -40,5 +41,13 @@ public class Task implements Serializable {
                 "description='" + description + '\'' +
                 ", isDone=" + isDone +
                 '}';
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
     }
 }
