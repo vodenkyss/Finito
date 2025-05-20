@@ -5,7 +5,7 @@ import java.io.Serializable;
 public enum Priority implements Serializable {
     LOW("Low"),MEDIUM("Medium"),HIGH("High");
 
-    private final String label;
+    private String label;
 
     Priority(String label) {
         this.label = label;
@@ -15,4 +15,13 @@ public enum Priority implements Serializable {
     public String toString() {
         return label;
     }
+
+    public int getLevel() {
+        return switch (this) {
+            case HIGH -> 3;
+            case MEDIUM -> 2;
+            case LOW -> 1;
+        };
+    }
+
 }

@@ -25,6 +25,10 @@ public class TaskManagerGUI {
     private DefaultListModel<TaskFolder> folderListModel;
 
     private ArrayList<TaskFolder> folders;
+    private JCheckBox showDone;
+    private JCheckBox showUndone;
+    private JCheckBox showHighPriority;
+
 
     public TaskManagerGUI() {
         folders = new ArrayList<>();
@@ -51,7 +55,7 @@ public class TaskManagerGUI {
         folderList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         folderList.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                loadFolder();
+                applyFilters();
             }
         });
 
@@ -83,6 +87,19 @@ public class TaskManagerGUI {
         sidebar.setPreferredSize(new Dimension(180, 0));
 
         JPanel contentPanel = new JPanel(new BorderLayout());
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        showDone = new JCheckBox("Show done", true);
+        showUndone = new JCheckBox("Show undone", true);
+        showHighPriority = new JCheckBox("Show high priority only", false);
+
+        filterPanel.add(showDone);
+        filterPanel.add(showUndone);
+        filterPanel.add(showHighPriority);
+
+        ItemListener filterListener = e -> applyFilters();
+        showDone.addItemListener(filterListener);
+        showUndone.addItemListener(filterListener);
+        showHighPriority.addItemListener(filterListener);
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
         textfield = new JTextField();
@@ -113,9 +130,14 @@ public class TaskManagerGUI {
                     Task task = taskDefaultListModel.get(index);
                     Rectangle bounds = taskJList.getCellBounds(index, index);
                     int iconSize = 16;
+
                     if (e.getX() - bounds.x <= iconSize) {
                         task.toggleDone();
                         taskJList.repaint();
+                    }
+
+                    else if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                        openTaskEditor(task);
                     }
                 }
             }
@@ -127,6 +149,7 @@ public class TaskManagerGUI {
 
         contentPanel.add(new JScrollPane(taskJList), BorderLayout.CENTER);
         contentPanel.add(bottomPanel, BorderLayout.SOUTH);
+        contentPanel.add(filterPanel, BorderLayout.NORTH);
 
         frame.add(sidebar, BorderLayout.WEST);
         frame.add(contentPanel, BorderLayout.CENTER);
@@ -156,8 +179,8 @@ public class TaskManagerGUI {
             }
 
             Priority priority = (Priority) JOptionPane.showInputDialog(frame,
-                    "Zvol prioritu:",
-                    "Priorita",
+                    "Choose priority:",
+                    "Priority",
                     JOptionPane.QUESTION_MESSAGE,
                     null, Priority.values(),
                     Priority.MEDIUM
@@ -165,7 +188,7 @@ public class TaskManagerGUI {
 
             Task task = new Task(description);
             task.setDeadline(deadline);
-            if (priority!=null){
+            if (priority != null) {
                 task.setPriority(priority);
             }
             TaskFolder selected = folderList.getSelectedValue();
@@ -186,15 +209,26 @@ public class TaskManagerGUI {
         }
     }
 
-    public void loadFolder() {
+    public void applyFilters() {
         taskDefaultListModel.clear();
         TaskFolder selected = folderList.getSelectedValue();
-        if (selected != null) {
-            for (Task task : selected.getTasks()) {
-                taskDefaultListModel.addElement(task);
-            }
-        }
+        if (selected == null) return;
+
+        boolean done = showDone.isSelected();
+        boolean undone = showUndone.isSelected();
+        boolean highOnly = showHighPriority.isSelected();
+
+        selected.getTasks().stream()
+                .filter(task -> {
+                    if (highOnly && task.getPriority() != Priority.HIGH) return false;
+                    if (!done && task.isDone()) return false;
+                    if (!undone && !task.isDone()) return false;
+                    return true;
+                })
+                .sorted((a, b) -> Integer.compare(b.getPriority().getLevel(), a.getPriority().getLevel()))
+                .forEach(taskDefaultListModel::addElement);
     }
+
 
     public void addFolder() {
         String name = JOptionPane.showInputDialog(frame, "Folder name:");
@@ -227,7 +261,11 @@ public class TaskManagerGUI {
         }
     }
 
-
+    private void openTaskEditor(Task task) {
+        TaskEditorDialog dialog = new TaskEditorDialog(frame, task);
+        dialog.setVisible(true);
+        applyFilters();
+    }
 
     private void windowColors() {
         Font customFont = new Font("Segoe UI", Font.BOLD, 14);
