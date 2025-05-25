@@ -4,7 +4,9 @@ import model.Task;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 public class TaskRender extends JCheckBox implements  ListCellRenderer<Task>{
 
@@ -18,22 +20,8 @@ public class TaskRender extends JCheckBox implements  ListCellRenderer<Task>{
             text += " (📅 " + value.getDeadline().format(formatter) + ")";
         }
 
-
         setText(text);
         setSelected(value.isDone());
-
-
-        /*
-        Color iconColor = switch (value.getPriority()) {
-            case HIGH -> new Color(255, 60, 60);
-            case MEDIUM -> new Color(255, 160, 40);
-            case LOW -> new Color(60, 200, 60);
-        };
-        setIcon(new ColorIcon(iconColor, 10));
-
-         */
-
-
 
         if (isSelected) {
             setBackground(list.getSelectionBackground());
@@ -41,6 +29,20 @@ public class TaskRender extends JCheckBox implements  ListCellRenderer<Task>{
         } else {
             setBackground(list.getBackground());
             setForeground(list.getForeground());
+        }
+
+        if (!value.isDone() && value.getDeadline() != null) {
+            long days = ChronoUnit.DAYS.between(LocalDate.now(), value.getDeadline());
+            if (days == 0) {
+                setBackground(new Color(255, 200, 200));
+                setForeground(Color.black);
+            } else if (days == 1) {
+                setBackground(new Color(255, 240, 200));
+                setForeground(Color.black);
+            } else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
         }
 
         return this;

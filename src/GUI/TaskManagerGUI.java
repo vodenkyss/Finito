@@ -11,6 +11,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
 public class TaskManagerGUI {
@@ -28,6 +29,8 @@ public class TaskManagerGUI {
     private JCheckBox showDone;
     private JCheckBox showUndone;
     private JCheckBox showHighPriority;
+
+    private JTextField searchField;
 
 
     public TaskManagerGUI() {
@@ -92,6 +95,18 @@ public class TaskManagerGUI {
         showUndone = new JCheckBox("Show undone", true);
         showHighPriority = new JCheckBox("Show high priority only", false);
 
+        searchField = new JTextField(15);
+        searchField.putClientProperty("JTextField.placeholderText", "Search...");
+
+        searchField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                applyFilters();
+            }
+        });
+
+        filterPanel.add(searchField);
+
         filterPanel.add(showDone);
         filterPanel.add(showUndone);
         filterPanel.add(showHighPriority);
@@ -142,6 +157,8 @@ public class TaskManagerGUI {
                 }
             }
         });
+
+
 
         bottomPanel.add(textfield, BorderLayout.CENTER);
         bottomPanel.add(addButton, BorderLayout.EAST);
@@ -217,12 +234,16 @@ public class TaskManagerGUI {
         boolean done = showDone.isSelected();
         boolean undone = showUndone.isSelected();
         boolean highOnly = showHighPriority.isSelected();
+        String searchText = searchField.getText().toLowerCase().trim();
+
 
         selected.getTasks().stream()
                 .filter(task -> {
                     if (highOnly && task.getPriority() != Priority.HIGH) return false;
                     if (!done && task.isDone()) return false;
                     if (!undone && !task.isDone()) return false;
+                    if (!searchText.isEmpty() && !task.getDescription().toLowerCase().contains(searchText)) return false;
+
                     return true;
                 })
                 .sorted((a, b) -> Integer.compare(b.getPriority().getLevel(), a.getPriority().getLevel()))
@@ -259,12 +280,41 @@ public class TaskManagerGUI {
         for (TaskFolder folder : folders) {
             folderListModel.addElement(folder);
         }
+        ArrayList<Task> upcoming = getTasksWithUpcomingDeadlines(1);
+
+        if (!upcoming.isEmpty()) {
+            StringBuilder msg = new StringBuilder("You have tasks with approaching deadline!:\n\n");
+            for (Task t : upcoming) {
+                msg.append("- ").append(t.getDescription())
+                        .append(" (do ").append(t.getDeadline()).append(")\n");
+            }
+
+            JOptionPane.showMessageDialog(frame, msg.toString(), "Upcoming tasks:", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void openTaskEditor(Task task) {
         TaskEditorDialog dialog = new TaskEditorDialog(frame, task);
         dialog.setVisible(true);
         applyFilters();
+    }
+
+    private ArrayList<Task> getTasksWithUpcomingDeadlines(int daysAhead) {
+        ArrayList<Task> upcoming = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+
+        for (TaskFolder folder : folders) { // tady máš složky
+            for (Task task : folder.getTasks()) {
+                LocalDate deadline = task.getDeadline();
+                if (deadline != null && !task.isDone()) {
+                    long daysBetween = ChronoUnit.DAYS.between(today, deadline);
+                    if (daysBetween >= 0 && daysBetween <= daysAhead) {
+                        upcoming.add(task);
+                    }
+                }
+            }
+        }
+        return upcoming;
     }
 
     private void windowColors() {
@@ -280,6 +330,5 @@ public class TaskManagerGUI {
         UIManager.put("Component.arc", 10);
         UIManager.put("Button.arc", 15);
         UIManager.put("TextComponent.arc", 10);
-
     }
 }
