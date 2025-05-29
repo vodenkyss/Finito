@@ -80,5 +80,13 @@ public class StatisticsPanel extends JPanel {
 
         doneProgressBar.setValue(percentDone);
     }
+
+    public JLabel getTotalTasksLabel() {
+        return totalTasksLabel;
+    }
+
+    public JLabel getDoneTasksLabel() {
+        return doneTasksLabel;
+    }
 }
 

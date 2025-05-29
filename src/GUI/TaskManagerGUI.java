@@ -1,6 +1,7 @@
 package GUI;
 
 import data.DataManager;
+import data.Quotes;
 import model.Priority;
 import model.Task;
 import model.TaskFolder;
@@ -9,11 +10,11 @@ import com.formdev.flatlaf.extras.FlatSVGIcon;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class TaskManagerGUI {
 
@@ -36,11 +37,17 @@ public class TaskManagerGUI {
     private JButton themeToggle;
 
     private StatisticsPanel statsPanel;
+    private Quotes q= new Quotes();
+
+    private JLabel quoteLabel;
 
 
     public TaskManagerGUI() {
         folders = new ArrayList<>();
         initialize();
+        q.loadQuotesFromFile("quotes.txt");
+        showRandomQuote();
+
     }
 
     public void initialize() {
@@ -123,6 +130,13 @@ public class TaskManagerGUI {
 
         statsPanel = new StatisticsPanel();
         frame.add(statsPanel, BorderLayout.EAST);
+
+        quoteLabel = new JLabel();
+        quoteLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        quoteLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+        quoteLabel.setBackground(new Color(68, 67, 67));
+        quoteLabel.setOpaque(true);
+        frame.add(quoteLabel, BorderLayout.NORTH);
 
         filterPanel.add(searchField);
         filterPanel.add(themeToggle);
@@ -370,6 +384,16 @@ public class TaskManagerGUI {
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
+    }
+
+    private void showRandomQuote() {
+        if (q.getQuotes().isEmpty()) {
+            quoteLabel.setText("No quotes available.");
+            return;
+        }
+        Random random = new Random();
+        String quote = q.getQuotes().get(random.nextInt(q.getQuotes().size()));
+        quoteLabel.setText("<html><body style='text-align: center;'>" + quote + "</body></html>");
     }
 
 
