@@ -1,9 +1,11 @@
 package GUI;
 
 import model.Task;
+import model.Priority;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -14,7 +16,7 @@ public class TaskRender extends JCheckBox implements  ListCellRenderer<Task>{
     @Override
     public Component getListCellRendererComponent(JList<? extends Task> list, Task value, int index, boolean isSelected, boolean cellHasFocus) {
 
-        String text = "[" + value.getPriority().toString() + "] " +value.getDescription();
+        String text = value.getDescription();
         if (value.getDeadline() != null) {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
             text += " (📅 " + value.getDeadline().format(formatter) + ")";
@@ -22,6 +24,7 @@ public class TaskRender extends JCheckBox implements  ListCellRenderer<Task>{
 
         setText(text);
         setSelected(value.isDone());
+
 
         if (isSelected) {
             setBackground(list.getSelectionBackground());
@@ -47,4 +50,7 @@ public class TaskRender extends JCheckBox implements  ListCellRenderer<Task>{
 
         return this;
     }
+
+
+
 }

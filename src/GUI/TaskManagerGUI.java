@@ -4,6 +4,7 @@ import data.DataManager;
 import model.Priority;
 import model.Task;
 import model.TaskFolder;
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +32,10 @@ public class TaskManagerGUI {
     private JCheckBox showHighPriority;
 
     private JTextField searchField;
+    private boolean darkMode = true;
+    private JButton themeToggle;
+
+    private StatisticsPanel statsPanel;
 
 
     public TaskManagerGUI() {
@@ -98,6 +103,17 @@ public class TaskManagerGUI {
         searchField = new JTextField(15);
         searchField.putClientProperty("JTextField.placeholderText", "Search...");
 
+        themeToggle = new JButton();
+        themeToggle.setFocusPainted(false);
+        themeToggle.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
+        themeToggle.setSize(30,30);
+        themeToggle.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        themeToggle.setContentAreaFilled(false);
+        themeToggle.setOpaque(false);
+        updateThemeToggleIcon();
+        themeToggle.addActionListener(e -> toggleTheme());
+
+
         searchField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
@@ -105,7 +121,11 @@ public class TaskManagerGUI {
             }
         });
 
+        statsPanel = new StatisticsPanel();
+        frame.add(statsPanel, BorderLayout.EAST);
+
         filterPanel.add(searchField);
+        filterPanel.add(themeToggle);
 
         filterPanel.add(showDone);
         filterPanel.add(showUndone);
@@ -149,6 +169,9 @@ public class TaskManagerGUI {
                     if (e.getX() - bounds.x <= iconSize) {
                         task.toggleDone();
                         taskJList.repaint();
+
+                        TaskFolder selectedFolder = folderList.getSelectedValue();
+                        statsPanel.updateStatistics(selectedFolder);
                     }
 
                     else if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
@@ -214,7 +237,12 @@ public class TaskManagerGUI {
                 taskDefaultListModel.addElement(task);
                 textfield.setText("");
             }
+            statsPanel.updateStatistics(selected);
+
+
         }
+        applyFilters();
+
     }
 
     private void removeTask() {
@@ -224,6 +252,7 @@ public class TaskManagerGUI {
             taskDefaultListModel.removeElement(selectedTask);
             selectedFolder.getTasks().remove(selectedTask);
         }
+        applyFilters();
     }
 
     public void applyFilters() {
@@ -248,9 +277,18 @@ public class TaskManagerGUI {
                 })
                 .sorted((a, b) -> Integer.compare(b.getPriority().getLevel(), a.getPriority().getLevel()))
                 .forEach(taskDefaultListModel::addElement);
+
+        statsPanel.updateStatistics(selected);
+
     }
 
 
+    /**
+     *  Prompts the user to enter a name for a new task folder and adds it to the list of folders.
+     *  If the user provides a valid name (non-null and not empty), a new task folder
+     *  is created and added to the internal list of folders. The newly created folder is also
+     *  added to the folder list model and selected in the user interface.
+     */
     public void addFolder() {
         String name = JOptionPane.showInputDialog(frame, "Folder name:");
         if (name != null && !name.trim().isEmpty()) {
@@ -317,6 +355,39 @@ public class TaskManagerGUI {
         return upcoming;
     }
 
+    private void toggleTheme() {
+        try {
+            if (darkMode) {
+                UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
+            } else {
+                UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarculaLaf());
+            }
+
+            SwingUtilities.updateComponentTreeUI(frame);
+            darkMode = !darkMode;
+            updateThemeToggleIcon();
+
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+    private void updateThemeToggleIcon() {
+
+        if (darkMode){
+            FlatSVGIcon icon = new FlatSVGIcon(getClass().getResource("/moon(1).svg"));
+            themeToggle.setIcon(icon);
+        }else {
+            FlatSVGIcon icon2 = new FlatSVGIcon(getClass().getResource("/moon.svg"));
+            themeToggle.setIcon(icon2);
+
+        }
+        themeToggle.setToolTipText(darkMode ? "Light mode" : "Dark mode");
+    }
+
     private void windowColors() {
         Font customFont = new Font("Segoe UI", Font.BOLD, 14);
         UIManager.put("Label.font", customFont);
@@ -330,5 +401,41 @@ public class TaskManagerGUI {
         UIManager.put("Component.arc", 10);
         UIManager.put("Button.arc", 15);
         UIManager.put("TextComponent.arc", 10);
+    }
+
+    public DefaultListModel<TaskFolder> getFolderListModel() {
+        return folderListModel;
+    }
+
+    public ArrayList<TaskFolder> getFolders() {
+        return folders;
+    }
+
+    public JList<TaskFolder> getFolderList() {
+        return folderList;
+    }
+
+    public DefaultListModel<Task> getTaskDefaultListModel() {
+        return taskDefaultListModel;
+    }
+
+    public JCheckBox getShowHighPriority() {
+        return showHighPriority;
+    }
+
+    public JCheckBox getShowDone() {
+        return showDone;
+    }
+
+    public void setShowDone(JCheckBox showDone) {
+        this.showDone = showDone;
+    }
+
+    public JCheckBox getShowUndone() {
+        return showUndone;
+    }
+
+    public void setShowUndone(JCheckBox showUndone) {
+        this.showUndone = showUndone;
     }
 }

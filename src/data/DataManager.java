@@ -1,16 +1,11 @@
 package data;
-
-
-import model.Task;
 import model.TaskFolder;
-
 import java.io.*;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
     public class DataManager {
 
-        private static  String file = "data.ser";
+        public static  String file = "data.ser";
 
         public static void saveFolders(ArrayList<TaskFolder> folders) {
             try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {

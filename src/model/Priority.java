@@ -7,6 +7,7 @@ public enum Priority implements Serializable {
 
     private String label;
 
+
     Priority(String label) {
         this.label = label;
     }
@@ -16,6 +17,11 @@ public enum Priority implements Serializable {
         return label;
     }
 
+    /**
+     * Returns the priority level associated with enum.
+     * The level is represented as an integer value
+     * @return integer level of the priority
+     */
     public int getLevel() {
         return switch (this) {
             case HIGH -> 3;

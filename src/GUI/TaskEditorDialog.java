@@ -12,7 +12,6 @@ import java.util.Date;
 public class TaskEditorDialog extends JDialog {
 
     private final Task task;
-    private JSpinner deadlineSpinner;
 
     public TaskEditorDialog(JFrame parent, Task task) {
         super(parent, "Edit task", true);
