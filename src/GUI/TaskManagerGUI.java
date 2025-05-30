@@ -6,7 +6,6 @@ import model.Priority;
 import model.Task;
 import model.TaskFolder;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -17,6 +16,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Random;
 
+/**
+ * This class is responsible for creating and managing the graphical user interface (GUI) of the task manager application.
+ *It includes features such as adding and removing tasks, task folders, and statistics panel.
+ *The class also handles user input, such as selecting tasks and folders, and updating the GUI accordingly.
+ */
 public class TaskManagerGUI {
 
     private JFrame frame;
@@ -50,6 +54,10 @@ public class TaskManagerGUI {
 
     private JButton moveSelectedButton;
 
+    /**
+     * Constructs the TaskManagerGUI and initializes the GUI components.
+     * Loads quotes from a file and displays a random quote.
+     */
     public TaskManagerGUI() {
         folders = new ArrayList<>();
         initialize();
@@ -58,6 +66,10 @@ public class TaskManagerGUI {
 
     }
 
+    /**
+     * Initializes the GUI components and sets up the layout.
+     * Configures the main frame, sidebar, content panel, and event listeners
+     */
     public void initialize() {
 
 
@@ -263,6 +275,16 @@ public class TaskManagerGUI {
         frame.setVisible(true);
     }
 
+
+    /**
+     * Adds a new task to selected folder.
+     *
+     * This method retrieves the task description from the text field and prompts the user to enter an
+     * optional deadline in the format "dd.MM.yyyy". If a deadline is provided, it attempts to parse
+     * the date. The user is also prompted to select a priority for the task. If the selected task folder
+     * is not null, the new task is added to that folder and the task list is updated in the user interface.
+     * After adding the task, the statistics panel is updated to reflect the changes.
+     */
     private void addTask() {
         String description = textfield.getText().trim();
         if (!description.isEmpty()) {
@@ -299,6 +321,10 @@ public class TaskManagerGUI {
 
     }
 
+    /**
+     * Removes the selected task in folder.
+     * After removing the task the statistics panel is updated to reflect the changes.
+     */
     private void removeTask() {
         Task selectedTask = taskJList.getSelectedValue();
         TaskFolder selectedFolder = folderList.getSelectedValue();
@@ -309,6 +335,12 @@ public class TaskManagerGUI {
         applyFilters();
     }
 
+    /**
+     * Applies filters and sorting to the tasks in selected folder.
+     *
+     * Checks the users preffered filter, including whether to show completed tasks, incomplete tasks, and
+     * high-priority tasks. The method also retrieves the search text entered by the user.
+     */
     public void applyFilters() {
         taskDefaultListModel.clear();
         TaskFolder selected = folderList.getSelectedValue();
@@ -360,6 +392,9 @@ public class TaskManagerGUI {
         }
     }
 
+    /**
+     * Removes the whole folder.
+     */
     public void removeFolder() {
         TaskFolder selected = folderList.getSelectedValue();
         if (selected != null) {
@@ -369,11 +404,18 @@ public class TaskManagerGUI {
         }
     }
 
+
     private void saveData() {
         DataManager.saveFolders(folders);
     }
 
 
+    /**
+     * Loads task folders from the data manager and updates the user interface.
+     *
+     *  It also checks for tasks with upcoming deadlines within
+     * the next day and displays a warning message if any are found.
+     */
     private void loadData() {
         folders = DataManager.loadFolders();
         for (TaskFolder folder : folders) {
@@ -391,12 +433,27 @@ public class TaskManagerGUI {
         }
     }
 
+    /**
+     * Opens editing window after doubleclick on task.
+     *
+     * User can edit description, deadline, priority and add notes.
+     * @param task the selected task
+     */
     private void openTaskEditor(Task task) {
         TaskEditorDialog dialog = new TaskEditorDialog(frame, task);
         dialog.setVisible(true);
         applyFilters();
     }
 
+    /**
+     * Retrieves tasks with upcoming deadlines within the specified number of days.
+     *
+     *This method iterates through all tasks in all folders and checks if the task has a deadline
+     *within the specified number of days from the current date. If a task meets this condition and
+     *is not yet done, it is added to the list of upcoming tasks.
+     * @param daysAhead the number of days ahead to check for upcoming deadlines
+     * @return tasks with upcoming deadline
+     */
     private ArrayList<Task> getTasksWithUpcomingDeadlines(int daysAhead) {
         ArrayList<Task> upcoming = new ArrayList<>();
         LocalDate today = LocalDate.now();
@@ -415,6 +472,9 @@ public class TaskManagerGUI {
         return upcoming;
     }
 
+    /**
+     * This method switches between dark and light mode.
+     */
     private void toggleTheme() {
         try {
             if (darkMode) {
@@ -432,6 +492,9 @@ public class TaskManagerGUI {
         }
     }
 
+    /**
+     * Displays a random quote from list
+     */
     private void showRandomQuote() {
         if (q.getQuotes().isEmpty()) {
             quoteLabel.setText("No quotes available.");
@@ -443,6 +506,11 @@ public class TaskManagerGUI {
     }
 
 
+    /**
+     * Updates the icon of the dark mode button.
+     *
+     * Light mode and dark mode have different icons.
+     */
     private void updateThemeToggleIcon() {
 
         if (darkMode) {
@@ -456,6 +524,11 @@ public class TaskManagerGUI {
         themeToggle.setToolTipText(darkMode ? "Light mode" : "Dark mode");
     }
 
+    /**
+     * Marks all tasks as done in selected folder.
+     *
+     * Checks if the current folder is not null
+     */
     private void completeAll() {
 
         TaskFolder currentFolder = folderList.getSelectedValue();
@@ -467,6 +540,11 @@ public class TaskManagerGUI {
         }
     }
 
+    /**
+     * Deletes all tasks in selected folder.
+     *
+     * Checks if the current folder is not null.
+     */
     private void deleteAll() {
         TaskFolder currentFolder = folderList.getSelectedValue();
         if (currentFolder != null) {
@@ -475,6 +553,11 @@ public class TaskManagerGUI {
         }
     }
 
+    /**
+     * Moves selected task between different folders.
+     *
+     * Shows Dialog window where user chooses where the task will be moved.
+     */
     private void moveSelectedTasks() {
         Task selectedTask = taskJList.getSelectedValue();
         if (selectedTask == null) return;
@@ -493,6 +576,9 @@ public class TaskManagerGUI {
     }
 
 
+    /**
+     * This method sets the font of various buttons, labels, combobox etc.
+     */
     private void windowColors() {
         Font customFont = new Font("Segoe UI", Font.BOLD, 14);
         UIManager.put("Label.font", customFont);
@@ -532,15 +618,9 @@ public class TaskManagerGUI {
         return showDone;
     }
 
-    public void setShowDone(JCheckBox showDone) {
-        this.showDone = showDone;
-    }
 
     public JCheckBox getShowUndone() {
         return showUndone;
     }
 
-    public void setShowUndone(JCheckBox showUndone) {
-        this.showUndone = showUndone;
-    }
 }

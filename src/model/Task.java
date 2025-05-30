@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Date;
 
+/**
+ * Represents a task with description, deadline, priority, and notes.
+ */
 public class Task implements Serializable {
     private String description;
     private boolean isDone;

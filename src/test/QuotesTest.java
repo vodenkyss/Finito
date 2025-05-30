@@ -13,16 +13,25 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the Quotes class.
+ */
 public class QuotesTest {
 
     private Quotes quotes;
     private final String testFilename = "test_quotes.txt";
 
+    /**
+     * Setting up the enviroment before each test.
+     */
     @BeforeEach
     public void setUp() {
         quotes = new Quotes();
     }
 
+    /**
+     * Deletes the text file if it exists after each test.
+     */
     @AfterEach
     public void tearDown() {
         File file = new File(testFilename);
@@ -31,6 +40,10 @@ public class QuotesTest {
         }
     }
 
+    /**
+     * Tests loading quotes from file.
+     * @throws IOException
+     */
     @Test
     public void testLoadQuotesFromFile() throws IOException {
         try (FileWriter writer = new FileWriter(testFilename)) {
@@ -49,6 +62,10 @@ public class QuotesTest {
         assertEquals("Quote 3", loadedQuotes.get(2), "Third quote should match");
     }
 
+    /**
+     * Tests loading quotes from empty file.
+     * @throws IOException
+     */
     @Test
     public void testLoadQuotesFromEmptyFile() throws IOException {
         new File(testFilename).createNewFile();
@@ -60,6 +77,9 @@ public class QuotesTest {
         assertTrue(loadedQuotes.isEmpty(), "Loaded quotes should be empty");
     }
 
+    /**
+     * Tests loading quotes from non existent file
+     */
     @Test
     public void testLoadQuotesFromNonExistentFile() {
         quotes.loadQuotesFromFile("non_existent_file.txt");

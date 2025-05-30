@@ -8,8 +8,14 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the Task class.
+ */
 public class TaskTest {
 
+    /**
+     * Tests the creation of new task.
+     */
     @Test
     public void testTaskCreation() {
         Task task = new Task("Test task");
@@ -19,6 +25,9 @@ public class TaskTest {
         assertEquals(Priority.MEDIUM, task.getPriority(), "Default priority should be MEDIUM");
     }
 
+    /**
+     * Tests if the toggle after the task is done works well.
+     */
     @Test
     public void testToggleDone() {
         Task task = new Task("Test task");
@@ -32,6 +41,9 @@ public class TaskTest {
         assertFalse(task.isDone(), "Task should be not done after toggling again");
     }
 
+    /**
+     * Tests setting deadline.
+     */
     @Test
     public void testSetDeadline() {
         Task task = new Task("Test task");
@@ -40,6 +52,9 @@ public class TaskTest {
         assertEquals(deadline, task.getDeadline(), "Deadline should match the set date");
     }
 
+    /**
+     * Tests setting priority.
+     */
     @Test
     public void testSetPriority() {
         Task task = new Task("Test task");
@@ -47,6 +62,9 @@ public class TaskTest {
         assertEquals(Priority.HIGH, task.getPriority(), "Priority should be HIGH");
     }
 
+    /**
+     * Tests setting notes.
+     */
     @Test
     public void testSetNotes() {
         Task task = new Task("Test task");
@@ -55,6 +73,9 @@ public class TaskTest {
         assertEquals(notes, task.getNotes(), "Notes should match the set notes");
     }
 
+    /**
+     * Tests setting invalid format of deadline.
+     */
     @Test
     public void testSetDeadlineWithInvalidFormat() {
         Task task = new Task("Task with invalid deadline");
@@ -65,6 +86,9 @@ public class TaskTest {
         assertNotNull(exception, "Should throw an exception for invalid date format");
     }
 
+    /**
+     * Tests if the deadline comparison works well.
+     */
     @Test
     public void testDeadlineComparison() {
         Task task1 = new Task("Task with future deadline");

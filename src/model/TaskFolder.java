@@ -3,6 +3,9 @@ package model;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+/**
+ * Represent a task folder with list of tasks.
+ */
 public class TaskFolder implements Serializable {
 
     private String name;
@@ -16,10 +19,6 @@ public class TaskFolder implements Serializable {
 
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public ArrayList<Task> getTasks() {

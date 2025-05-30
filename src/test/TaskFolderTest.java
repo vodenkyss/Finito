@@ -6,8 +6,14 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the TaskFolder class.
+ */
 public class TaskFolderTest {
 
+    /**
+     * Tests adding and removing task from task folder.
+     */
     @Test
     public void testAddAndRemoveTask() {
         TaskFolder folder = new TaskFolder("Test Folder");

@@ -9,10 +9,18 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
+/**
+ * Dialog window for editing selected task.
+ */
 public class TaskEditorDialog extends JDialog {
 
     private final Task task;
 
+    /**
+     * Constructs a TaskEditorDialog for editing the specified task.
+     * @param parent the parent frame of the dialog
+     * @param task the task to be edited
+     */
     public TaskEditorDialog(JFrame parent, Task task) {
         super(parent, "Edit task", true);
         this.task = task;

@@ -1,9 +1,16 @@
 import GUI.TaskManagerGUI;
 
+/**
+ *  The main application class for launching the Finito task manager.
+ */
 public class App {
 
     private TaskManagerGUI gui;
 
+    /**
+     * Starts the application by logging the launch message, loading data, and initializing the GUI.
+     * A shutdown hook is also added to save data when the application is closed.
+     */
     public void start() {
         log("Launching Finito!...");
         loadData();

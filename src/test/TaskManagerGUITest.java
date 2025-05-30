@@ -11,11 +11,17 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the  TaskManagerGUI class.
+ */
 public class TaskManagerGUITest {
 
     private TaskManagerGUI taskManagerGUI;
     private TaskFolder folder;
 
+    /**
+     * Initializes a new instance of the TaskManagerGUI class and adds a test folder to it.
+     */
     @BeforeEach
     public void setUp() {
         taskManagerGUI = new TaskManagerGUI();
@@ -24,6 +30,13 @@ public class TaskManagerGUITest {
         taskManagerGUI.getFolderListModel().addElement(folder);
     }
 
+    /**
+     * Tests the application of filters to tasks.
+     *
+     * This test creates four tasks with different priorities and statuses, adds them to the test folder,
+     * and applies filters to the tasks based on their status and priority. It then verifies that the
+     * tasks are correctly filtered and displayed in the GUI
+     */
     @Test
     public void testApplyFilters() {
         Task task1 = new Task("High priority task");

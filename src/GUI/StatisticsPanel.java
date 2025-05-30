@@ -8,6 +8,9 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * A panel that displays statistical information about tasks in a selected TaskFolder.
+ */
 public class StatisticsPanel extends JPanel {
 
     private JLabel totalTasksLabel;
@@ -47,6 +50,13 @@ public class StatisticsPanel extends JPanel {
         add(doneProgressBar);
     }
 
+    /**
+     * Updates the statistics displayed on statistics panel
+     *
+     * This method calculates various statistics, including the total number of tasks, the number of completed tasks,
+     * the count of task priority, number of tasks with deadline,progress bar , and the number of overdue tasks.
+     * @param selectedFolder the task folder containing the tasks for which statistics are to be updated.
+     */
     public void updateStatistics(TaskFolder selectedFolder) {
         if (selectedFolder == null) return;
 
@@ -63,10 +73,6 @@ public class StatisticsPanel extends JPanel {
         long overdue = tasks.stream()
                 .filter(t -> t.getDeadline() != null && t.getDeadline().isBefore(LocalDate.now().plusDays(1)))
                 .count();
-
-
-
-
 
         totalTasksLabel.setText("Total tasks: " + tasks.size());
         doneTasksLabel.setText("Done: " + done+ " (" + percentDone + "%)");

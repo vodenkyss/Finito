@@ -15,15 +15,24 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the DataManager class.
+ */
 public class DataManagerTest {
 
     private final String testFilename = "test_folders.ser";
 
+    /**
+     * Sets up the test environment before each test.
+     */
     @BeforeEach
     public void setUp() {
         DataManager.file = testFilename;
     }
 
+    /**
+     * Cleans up the test environment after each test.
+     */
     @AfterEach
     public void tearDown() {
         File file = new File(testFilename);
@@ -33,7 +42,7 @@ public class DataManagerTest {
     }
 
     /**
-     *
+     *Tests the saving and loading task folders.
      */
     @Test
     public void testSaveAndLoadFolders() {
@@ -79,6 +88,9 @@ public class DataManagerTest {
         assertTrue(loadedTask2.isDone());
     }
 
+    /**
+     * Tests saving and loading empty folder.
+     */
     @Test
     public void testSaveEmptyFolder() {
         TaskFolder emptyFolder = new TaskFolder("Empty Folder");

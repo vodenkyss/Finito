@@ -1,8 +1,6 @@
 package GUI;
 
 import model.Task;
-import model.Priority;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -10,9 +8,21 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * * Custom renderer for displaying Task objects inside a JList.
+ */
 public class TaskRender extends JCheckBox implements  ListCellRenderer<Task>{
 
 
+    /**
+     * Returns a component that has been configured to display the specified value.
+     *
+     * @param list The JList we're painting.
+     * @param value The value returned by list.getModel().getElementAt(index).
+     * @param index The cells index.
+     * @param isSelected True if the specified cell was selected.
+     * @param cellHasFocus True if the specified cell has the focus.
+     */
     @Override
     public Component getListCellRendererComponent(JList<? extends Task> list, Task value, int index, boolean isSelected, boolean cellHasFocus) {
 

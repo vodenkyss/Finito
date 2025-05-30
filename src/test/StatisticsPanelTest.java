@@ -11,8 +11,14 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the StatisticsPanel class.
+ */
 public class StatisticsPanelTest {
 
+    /**
+     * Tests updating statistics after some movement in task manager.
+     */
     @Test
     public void testUpdateStatistics() {
         StatisticsPanel statsPanel = new StatisticsPanel();
