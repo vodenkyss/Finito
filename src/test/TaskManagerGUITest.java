@@ -26,7 +26,6 @@ public class TaskManagerGUITest {
 
     @Test
     public void testApplyFilters() {
-        // Create tasks with different priorities and statuses
         Task task1 = new Task("High priority task");
         task1.setPriority(Priority.HIGH);
         task1.setDone(false);

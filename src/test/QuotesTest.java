@@ -1,0 +1,73 @@
+package test;
+
+import data.Quotes;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import javax.swing.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class QuotesTest {
+
+    private Quotes quotes;
+    private final String testFilename = "test_quotes.txt";
+
+    @BeforeEach
+    public void setUp() {
+        quotes = new Quotes();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        File file = new File(testFilename);
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
+    @Test
+    public void testLoadQuotesFromFile() throws IOException {
+        try (FileWriter writer = new FileWriter(testFilename)) {
+            writer.write("Quote 1\n");
+            writer.write("Quote 2\n");
+            writer.write("Quote 3\n");
+        }
+
+        quotes.loadQuotesFromFile(testFilename);
+        ArrayList<String> loadedQuotes = quotes.getQuotes();
+
+        assertNotNull(loadedQuotes, "Loaded quotes should not be null");
+        assertEquals(3, loadedQuotes.size(), "Should load three quotes");
+        assertEquals("Quote 1", loadedQuotes.get(0), "First quote should match");
+        assertEquals("Quote 2", loadedQuotes.get(1), "Second quote should match");
+        assertEquals("Quote 3", loadedQuotes.get(2), "Third quote should match");
+    }
+
+    @Test
+    public void testLoadQuotesFromEmptyFile() throws IOException {
+        new File(testFilename).createNewFile();
+
+        quotes.loadQuotesFromFile(testFilename);
+        ArrayList<String> loadedQuotes = quotes.getQuotes();
+
+        assertNotNull(loadedQuotes, "Loaded quotes should not be null");
+        assertTrue(loadedQuotes.isEmpty(), "Loaded quotes should be empty");
+    }
+
+    @Test
+    public void testLoadQuotesFromNonExistentFile() {
+        quotes.loadQuotesFromFile("non_existent_file.txt");
+        ArrayList<String> loadedQuotes = quotes.getQuotes();
+
+        assertNotNull(loadedQuotes, "Loaded quotes should not be null");
+        assertTrue(loadedQuotes.isEmpty(), "Loaded quotes should be empty when file does not exist");
+    }
+
+
+}

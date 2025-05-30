@@ -37,16 +37,16 @@ public class DataManagerTest {
      */
     @Test
     public void testSaveAndLoadFolders() {
-        TaskFolder folder1 = new TaskFolder("Škola");
-        Task task1 = new Task("Dopsat úkol z matiky");
+        TaskFolder folder1 = new TaskFolder("School");
+        Task task1 = new Task("Math homework");
         task1.setPriority(Priority.HIGH);
         task1.setDeadline(LocalDate.of(2025, 6, 1));
-        task1.setNotes("Strana 42–44");
+        task1.setNotes("Page 42–44");
 
         folder1.addTask(task1);
 
-        TaskFolder folder2 = new TaskFolder("Domácnost");
-        Task task2 = new Task("Vynést koš");
+        TaskFolder folder2 = new TaskFolder("Home");
+        Task task2 = new Task("Clean");
         task2.setDone(true);
         folder2.addTask(task2);
 
@@ -62,21 +62,35 @@ public class DataManagerTest {
         assertEquals(2, loadedFolders.size());
 
         TaskFolder loadedFolder1 = loadedFolders.get(0);
-        assertEquals("Škola", loadedFolder1.getName());
+        assertEquals("School", loadedFolder1.getName());
         assertEquals(1, loadedFolder1.getTasks().size());
         Task loadedTask1 = loadedFolder1.getTasks().get(0);
-        assertEquals("Dopsat úkol z matiky", loadedTask1.getDescription());
+        assertEquals("Math homework", loadedTask1.getDescription());
         assertEquals(Priority.HIGH, loadedTask1.getPriority());
         assertEquals(LocalDate.of(2025, 6, 1), loadedTask1.getDeadline());
-        assertEquals("Strana 42–44", loadedTask1.getNotes());
+        assertEquals("Page 42–44", loadedTask1.getNotes());
         assertFalse(loadedTask1.isDone());
 
         TaskFolder loadedFolder2 = loadedFolders.get(1);
-        assertEquals("Domácnost", loadedFolder2.getName());
+        assertEquals("Home", loadedFolder2.getName());
         assertEquals(1, loadedFolder2.getTasks().size());
         Task loadedTask2 = loadedFolder2.getTasks().get(0);
-        assertEquals("Vynést koš", loadedTask2.getDescription());
+        assertEquals("Clean", loadedTask2.getDescription());
         assertTrue(loadedTask2.isDone());
     }
+
+    @Test
+    public void testSaveEmptyFolder() {
+        TaskFolder emptyFolder = new TaskFolder("Empty Folder");
+        ArrayList<TaskFolder> originalFolders = new ArrayList<>();
+        originalFolders.add(emptyFolder);
+        DataManager.saveFolders(originalFolders);
+        List<TaskFolder> loadedFolders = DataManager.loadFolders();
+        assertEquals(1, loadedFolders.size(), "Should load one folder");
+        TaskFolder loadedFolder = loadedFolders.get(0);
+        assertEquals("Empty Folder", loadedFolder.getName());
+        assertTrue(loadedFolder.getTasks().isEmpty(), "Loaded folder should have no tasks");
+    }
+
 }
 

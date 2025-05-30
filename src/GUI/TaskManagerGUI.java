@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Random;
 
 public class TaskManagerGUI {
@@ -37,10 +38,17 @@ public class TaskManagerGUI {
     private JButton themeToggle;
 
     private StatisticsPanel statsPanel;
-    private Quotes q= new Quotes();
+    private Quotes q = new Quotes();
 
     private JLabel quoteLabel;
 
+    private JComboBox<String> sortComboBox;
+
+    private JButton completeAllButton;
+
+    private JButton deleteAllCompletedButton;
+
+    private JButton moveSelectedButton;
 
     public TaskManagerGUI() {
         folders = new ArrayList<>();
@@ -62,7 +70,7 @@ public class TaskManagerGUI {
 
         frame = new JFrame("Finito!");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(700, 600);
+        frame.setSize(900, 600);
         frame.setLayout(new BorderLayout());
 
         folderListModel = new DefaultListModel<>();
@@ -104,8 +112,11 @@ public class TaskManagerGUI {
         JPanel contentPanel = new JPanel(new BorderLayout());
         JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         showDone = new JCheckBox("Show done", true);
+        showDone.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         showUndone = new JCheckBox("Show undone", true);
+        showUndone.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         showHighPriority = new JCheckBox("Show high priority only", false);
+        showHighPriority.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
         searchField = new JTextField(15);
         searchField.putClientProperty("JTextField.placeholderText", "Search...");
@@ -113,7 +124,7 @@ public class TaskManagerGUI {
         themeToggle = new JButton();
         themeToggle.setFocusPainted(false);
         themeToggle.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
-        themeToggle.setSize(30,30);
+        themeToggle.setSize(30, 30);
         themeToggle.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         themeToggle.setContentAreaFilled(false);
         themeToggle.setOpaque(false);
@@ -138,12 +149,20 @@ public class TaskManagerGUI {
         quoteLabel.setOpaque(true);
         frame.add(quoteLabel, BorderLayout.NORTH);
 
+        String[] sortOptions = {"Priority", "Deadline", "Name", "Done status"};
+        sortComboBox = new JComboBox<>(sortOptions);
+        sortComboBox.setToolTipText("Sort by");
+        sortComboBox.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        sortComboBox.addActionListener(e -> applyFilters());
+
+
         filterPanel.add(searchField);
         filterPanel.add(themeToggle);
 
         filterPanel.add(showDone);
         filterPanel.add(showUndone);
         filterPanel.add(showHighPriority);
+        filterPanel.add(sortComboBox);
 
         ItemListener filterListener = e -> applyFilters();
         showDone.addItemListener(filterListener);
@@ -186,15 +205,42 @@ public class TaskManagerGUI {
 
                         TaskFolder selectedFolder = folderList.getSelectedValue();
                         statsPanel.updateStatistics(selectedFolder);
-                    }
-
-                    else if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    } else if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
                         openTaskEditor(task);
                     }
                 }
             }
         });
 
+        completeAllButton = new JButton("Mark all as done");
+        completeAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                completeAll();
+            }
+        });
+        deleteAllCompletedButton = new JButton("Delete all completed");
+        deleteAllCompletedButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteAll();
+            }
+        });
+        moveSelectedButton = new JButton("Move selected");
+        moveSelectedButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                moveSelectedTasks();
+            }
+        });
+
+
+        JPanel batchActionsPanel = new JPanel();
+        batchActionsPanel.add(completeAllButton);
+        batchActionsPanel.add(deleteAllCompletedButton);
+        batchActionsPanel.add(moveSelectedButton);
+
+        frame.add(batchActionsPanel, BorderLayout.SOUTH);
 
 
         bottomPanel.add(textfield, BorderLayout.CENTER);
@@ -232,13 +278,7 @@ public class TaskManagerGUI {
                 }
             }
 
-            Priority priority = (Priority) JOptionPane.showInputDialog(frame,
-                    "Choose priority:",
-                    "Priority",
-                    JOptionPane.QUESTION_MESSAGE,
-                    null, Priority.values(),
-                    Priority.MEDIUM
-            );
+            Priority priority = (Priority) JOptionPane.showInputDialog(frame, "Choose priority:", "Priority", JOptionPane.QUESTION_MESSAGE, null, Priority.values(), Priority.MEDIUM);
 
             Task task = new Task(description);
             task.setDeadline(deadline);
@@ -279,18 +319,25 @@ public class TaskManagerGUI {
         boolean highOnly = showHighPriority.isSelected();
         String searchText = searchField.getText().toLowerCase().trim();
 
+        String selectedSort = (String) sortComboBox.getSelectedItem();
 
-        selected.getTasks().stream()
-                .filter(task -> {
-                    if (highOnly && task.getPriority() != Priority.HIGH) return false;
-                    if (!done && task.isDone()) return false;
-                    if (!undone && !task.isDone()) return false;
-                    if (!searchText.isEmpty() && !task.getDescription().toLowerCase().contains(searchText)) return false;
+        Comparator<Task> comparator = switch (selectedSort) {
+            case "Deadline" -> Comparator.comparing(Task::getDeadline, Comparator.nullsLast(Comparator.naturalOrder()));
+            case "Name" -> Comparator.comparing(Task::getDescription, String.CASE_INSENSITIVE_ORDER);
+            case "Done status" -> Comparator.comparing(Task::isDone);
+            case "Priority" -> Comparator.comparingInt(t -> -t.getPriority().getLevel());
+            default -> (a, b) -> 0;
+        };
 
-                    return true;
-                })
-                .sorted((a, b) -> Integer.compare(b.getPriority().getLevel(), a.getPriority().getLevel()))
-                .forEach(taskDefaultListModel::addElement);
+
+        selected.getTasks().stream().filter(task -> {
+            if (highOnly && task.getPriority() != Priority.HIGH) return false;
+            if (!done && task.isDone()) return false;
+            if (!undone && !task.isDone()) return false;
+            if (!searchText.isEmpty() && !task.getDescription().toLowerCase().contains(searchText)) return false;
+
+            return true;
+        }).sorted(comparator).forEach(taskDefaultListModel::addElement);
 
         statsPanel.updateStatistics(selected);
 
@@ -298,10 +345,10 @@ public class TaskManagerGUI {
 
 
     /**
-     *  Prompts the user to enter a name for a new task folder and adds it to the list of folders.
-     *  If the user provides a valid name (non-null and not empty), a new task folder
-     *  is created and added to the internal list of folders. The newly created folder is also
-     *  added to the folder list model and selected in the user interface.
+     * Prompts the user to enter a name for a new task folder and adds it to the list of folders.
+     * If the user provides a valid name (non-null and not empty), a new task folder
+     * is created and added to the internal list of folders. The newly created folder is also
+     * added to the folder list model and selected in the user interface.
      */
     public void addFolder() {
         String name = JOptionPane.showInputDialog(frame, "Folder name:");
@@ -337,8 +384,7 @@ public class TaskManagerGUI {
         if (!upcoming.isEmpty()) {
             StringBuilder msg = new StringBuilder("You have tasks with approaching deadline!:\n\n");
             for (Task t : upcoming) {
-                msg.append("- ").append(t.getDescription())
-                        .append(" (do ").append(t.getDeadline()).append(")\n");
+                msg.append("- ").append(t.getDescription()).append(" (do ").append(t.getDeadline()).append(")\n");
             }
 
             JOptionPane.showMessageDialog(frame, msg.toString(), "Upcoming tasks:", JOptionPane.WARNING_MESSAGE);
@@ -355,7 +401,7 @@ public class TaskManagerGUI {
         ArrayList<Task> upcoming = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        for (TaskFolder folder : folders) { // tady máš složky
+        for (TaskFolder folder : folders) {
             for (Task task : folder.getTasks()) {
                 LocalDate deadline = task.getDeadline();
                 if (deadline != null && !task.isDone()) {
@@ -397,20 +443,55 @@ public class TaskManagerGUI {
     }
 
 
-
-
     private void updateThemeToggleIcon() {
 
-        if (darkMode){
+        if (darkMode) {
             FlatSVGIcon icon = new FlatSVGIcon(getClass().getResource("/moon(1).svg"));
             themeToggle.setIcon(icon);
-        }else {
+        } else {
             FlatSVGIcon icon2 = new FlatSVGIcon(getClass().getResource("/moon.svg"));
             themeToggle.setIcon(icon2);
 
         }
         themeToggle.setToolTipText(darkMode ? "Light mode" : "Dark mode");
     }
+
+    private void completeAll() {
+
+        TaskFolder currentFolder = folderList.getSelectedValue();
+        if (currentFolder != null) {
+            for (Task task : currentFolder.getTasks()) {
+                task.setDone(true);
+            }
+            applyFilters();
+        }
+    }
+
+    private void deleteAll() {
+        TaskFolder currentFolder = folderList.getSelectedValue();
+        if (currentFolder != null) {
+            currentFolder.getTasks().removeIf(Task::isDone);
+            applyFilters();
+        }
+    }
+
+    private void moveSelectedTasks() {
+        Task selectedTask = taskJList.getSelectedValue();
+        if (selectedTask == null) return;
+
+        TaskFolder currentFolder = folderList.getSelectedValue();
+        if (currentFolder == null) return;
+
+        TaskFolder[] options = folders.stream().filter(f -> f != currentFolder).toArray(TaskFolder[]::new);
+        TaskFolder newFolder = (TaskFolder) JOptionPane.showInputDialog(frame, "Move to:", "Move Task", JOptionPane.PLAIN_MESSAGE, null, options, options.length > 0 ? options[0] : null);
+
+        if (newFolder != null) {
+            currentFolder.getTasks().remove(selectedTask);
+            newFolder.getTasks().add(selectedTask);
+            applyFilters();
+        }
+    }
+
 
     private void windowColors() {
         Font customFont = new Font("Segoe UI", Font.BOLD, 14);

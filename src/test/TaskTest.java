@@ -55,6 +55,29 @@ public class TaskTest {
         assertEquals(notes, task.getNotes(), "Notes should match the set notes");
     }
 
+    @Test
+    public void testSetDeadlineWithInvalidFormat() {
+        Task task = new Task("Task with invalid deadline");
+        String invalidDate = "invalid-date";
+        Exception exception = assertThrows(Exception.class, () -> {
+            LocalDate.parse(invalidDate);
+        });
+        assertNotNull(exception, "Should throw an exception for invalid date format");
+    }
+
+    @Test
+    public void testDeadlineComparison() {
+        Task task1 = new Task("Task with future deadline");
+        LocalDate futureDeadline = LocalDate.of(2025, 12, 31);
+        task1.setDeadline(futureDeadline);
+
+        Task task2 = new Task("Task with past deadline");
+        LocalDate pastDeadline = LocalDate.of(2020, 1, 1);
+        task2.setDeadline(pastDeadline);
+
+        assertTrue(task1.getDeadline().isAfter(task2.getDeadline()), "Future deadline should be after past deadline");
+    }
+
 
 
 
