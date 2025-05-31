@@ -2,7 +2,8 @@ package data;
 
 import javax.swing.*;
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -14,12 +15,16 @@ public class Quotes {
     private ArrayList<String> quotes;
 
     /**
-     * This method loads the quotes from text file to ArrayList
-     * @param filename name of the file
+     * Loads quotes from a file inside resources (e.g. "quotes.txt")
+     * @param filename resource path (just the name if it's in root of resources)
      */
     public void loadQuotesFromFile(String filename) {
         quotes = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
+        try (InputStream in = getClass().getClassLoader().getResourceAsStream(filename)) {
+            if (in == null) {
+                throw new IOException("File not found: " + filename);
+            }
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String line;
             while ((line = br.readLine()) != null) {
                 quotes.add(line);

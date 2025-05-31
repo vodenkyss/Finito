@@ -9,7 +9,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 /**
- * * Custom renderer for displaying Task objects inside a JList.
+ * Custom renderer for displaying Task objects inside a JList.
+ *
+ * Inspired by:
+ * https://docs.oracle.com/javase/8/docs/api/javax/swing/ListCellRenderer.html
  */
 public class TaskRender extends JCheckBox implements  ListCellRenderer<Task>{
 
